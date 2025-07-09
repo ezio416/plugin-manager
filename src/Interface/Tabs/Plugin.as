@@ -148,7 +148,7 @@ class PluginTab : Tab
 			int pluginSiteID = installedPlugin.SiteID;
 
 			// If the plugin is loaded we can uninstall normally
-			PluginUninstallAsync(installedPlugin);
+			PluginManager::PluginUninstallAsync(installedPlugin);
 		} else {
 			// If the plugin is not loaded (but it is installed) we can just delete the file
 			// This can happen when a plugin is unsigned or there's some other permission-related error

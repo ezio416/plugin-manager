@@ -1,21 +1,24 @@
-void PluginUninstallAsync(ref@ metaPlugin)
+namespace PluginManager
 {
-	auto plugin = cast<Meta::Plugin@>(metaPlugin);
-	string pluginSourcePath = plugin.SourcePath;
-	string pluginIdentifier = plugin.ID;
+	void PluginUninstallAsync(ref@ metaPlugin)
+	{
+		auto plugin = cast<Meta::Plugin@>(metaPlugin);
+		string pluginSourcePath = plugin.SourcePath;
+		string pluginIdentifier = plugin.ID;
 
-	warn("Uninstalling plugin " + plugin.Name);
+		warn("Uninstalling plugin " + plugin.Name);
 
-	Meta::UnloadPlugin(plugin);
-	@plugin = null;
+		Meta::UnloadPlugin(plugin);
+		@plugin = null;
 
-	// Yield once to make sure the plugin is really unloaded, as UnloadPlugin only queues plugins to be unloaded rather than immediately
-	yield();
+		// Yield once to make sure the plugin is really unloaded, as UnloadPlugin only queues plugins to be unloaded rather than immediately
+		yield();
 
-	IO::Delete(pluginSourcePath);
+		IO::Delete(pluginSourcePath);
 
-	// Sync the plugin cache
-	PluginCache::SyncRemove(pluginIdentifier);
+		// Sync the plugin cache
+		PluginCache::SyncRemove(pluginIdentifier);
+	}
 }
 
 void PluginInstallAsync(int siteID, const string &in identifier, const Version &in version, bool load = true)
@@ -75,7 +78,7 @@ void PluginUpdateAsync(ref@ update)
 		auto sortedPlugins = index.TopologicalSort();
 
 		// Uninstall the plugin (this will also unload dependents)
-		PluginUninstallAsync(installedPlugin);
+		PluginManager::PluginUninstallAsync(installedPlugin);
 		@installedPlugin = null;
 
 		// Install the plugin without loading it
@@ -118,7 +121,7 @@ void UpdateAllPluginsAsync()
 		auto installedPlugin = Meta::GetPluginFromSiteID(au.m_siteID);
 		if (installedPlugin !is null) {
 			// Uninstall the plugin (this will also unload dependents)
-			PluginUninstallAsync(installedPlugin);
+			PluginManager::PluginUninstallAsync(installedPlugin);
 			@installedPlugin = null;
 
 			// Install the plugin without loading it
