@@ -1,3 +1,10 @@
+class DependentPluginInfo
+{
+	string m_path;
+	Meta::PluginSource m_source;
+	Meta::PluginType m_type;
+}
+
 namespace PluginManager
 {
 	void PluginUninstallAsync(ref@ metaPlugin)
@@ -5,6 +12,19 @@ namespace PluginManager
 		auto plugin = cast<Meta::Plugin@>(metaPlugin);
 		string pluginSourcePath = plugin.SourcePath;
 		string pluginIdentifier = plugin.ID;
+
+		// Get list of plugins that optionally depend on it
+		array<DependentPluginInfo@> dependents;
+		array<Meta::Plugin@>@ plugins = Meta::AllPlugins();
+		for (uint i = 0; i < plugins.Length; i++) {
+			if (plugins[i].OptionalDependencies.Find(pluginIdentifier) > -1) {
+				DependentPluginInfo p;
+				p.m_path = plugins[i].SourcePath;
+				p.m_source = plugins[i].Source;
+				p.m_type = plugins[i].Type;
+				dependents.InsertLast(p);
+			}
+		}
 
 		warn("Uninstalling plugin " + plugin.Name);
 
@@ -18,6 +38,11 @@ namespace PluginManager
 
 		// Sync the plugin cache
 		PluginCache::SyncRemove(pluginIdentifier);
+
+		// Reload optionally dependent plugins
+		for (uint i = 0; i < dependents.Length; i++) {
+			Meta::LoadPlugin(dependents[i].m_path, dependents[i].m_source, dependents[i].m_type);
+		}
 	}
 }
 
