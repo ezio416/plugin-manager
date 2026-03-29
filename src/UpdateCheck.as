@@ -84,7 +84,7 @@ void CheckForUpdatesAsync()
 		}
 
 		auto plugin = Meta::GetPluginFromSiteID(siteId);
-		if (plugin !is null and plugin.Type != Meta::PluginType::Zip) {
+		if (plugin !is null && plugin.Type != Meta::PluginType::Zip) {
 			continue;
 		}
 
